@@ -1,0 +1,72 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info/
+.venv/
+.uv/
+
+# Testing / linting caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# Entorno y secretos (NUNCA versionar)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.secret
+*.secrets
+*.token
+*credentials*.json
+*secret*.json
+.streamlit/secrets.toml
+
+# Artefactos pesados / datos / cachés ML (revisar caso a caso)
+data/raw/
+data/processed/
+data/videos/
+outputs/
+artifacts/
+.cache/
+huggingface/
+*.h5
+*.pt
+*.pth
+*.onnx
+*.safetensors
+*.sqlite
+*.db
+*.mp4
+*.avi
+*.mov
+*.mkv
+*.webm
+
+# Sistema operativo / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# Slidev (si aplica)
+node_modules/
+.slidev/
+*.png.tmp
+
+# Índice de tgrep
+.tgrep/
+
+# Especificaciones locales del curso (no versionar)
+Trabajo Final Procesamiento de Datos Secuenciales.docx.pdf

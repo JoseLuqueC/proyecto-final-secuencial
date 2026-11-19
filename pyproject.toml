@@ -1,0 +1,66 @@
+[project]
+name = "proyecto-final-secuencial"
+version = "0.1.0"
+description = "Inferencia, analisis de atencion Q/K/V y visualizacion interactiva de un Transformer Encoder-Decoder en datos secuenciales."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.13"
+keywords = []
+authors = [
+    { name = "JoseLuqueC", email = "joseluque93l.lc@gmail.com" },
+]
+classifiers = [
+    "Development Status :: 1 - Planning",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.13",
+    "Typing :: Typed",
+]
+dependencies = [
+    "matplotlib>=3.11.2",
+    "numpy>=2.5.5",
+    "opencv-python-headless>=5.1.0.95",
+    "pillow>=13.0.0",
+    "streamlit>=1.67.0",
+    "torch>=2.15.0",
+    "transformers>=5.23.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/JoseLuqueC/proyecto-final-secuencial"
+Repository = "https://github.com/JoseLuqueC/proyecto-final-secuencial"
+Issues = "https://github.com/JoseLuqueC/proyecto-final-secuencial/issues"
+
+[build-system]
+requires = ["uv_build>=0.12.2,<0.13.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "seq_transformer"
+
+[dependency-groups]
+dev = [
+    "detect-secrets>=1.5.0",
+    "pre-commit>=3.7",
+    "pytest>=8.0",
+    "ruff>=0.6",
+    "ty>=0.0.1",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM", "RUF", "C4"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["seq_transformer"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

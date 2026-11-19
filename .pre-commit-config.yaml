@@ -1,0 +1,59 @@
+# Pre-commit hooks — https://pre-commit.com
+#
+# Instalar (una vez por clon):   uv run pre-commit install
+# Ejecutar sobre todo el repo:   uv run pre-commit run --all-files
+# Herramientas: higiene de archivos + Ruff + uv-lock.
+
+default_language_version:
+  python: python3.13
+
+minimum_pre_commit_version: "3.7.0"
+fail_fast: false
+
+repos:
+  # --- Límite de tamaño de archivos (compatible con Windows App Control y CI) ---
+  - repo: local
+    hooks:
+      - id: check-added-large-files
+        name: check for added large files
+        entry: python -c "import pathlib, sys; big=[f for f in sys.argv[1:] if pathlib.Path(f).is_file() and pathlib.Path(f).stat().st_size > 2048*1024]; print('\n'.join(f'{f} supera 2048 KB' for f in big)) if big else None; sys.exit(1 if big else 0)"
+        language: system
+        pass_filenames: true
+
+  # --- Higiene general de archivos ---
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: check-json
+      - id: check-toml
+      - id: check-yaml
+        args: ["--allow-multiple-documents"]
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+        args: ["--markdown-linebreak-ext=md"]
+      - id: mixed-line-ending
+      - id: detect-private-key
+
+  # --- Seguridad: prevención de fuga de secretos ---
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        args: ["--baseline", ".secrets.baseline"]
+        exclude: "(uv\\.lock|\\.secrets\\.baseline)$"
+
+  # --- Ruff: lint + formato (Astral) ---
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.9
+    hooks:
+      - id: ruff
+        args: ["--fix", "--exit-non-zero-on-fix"]
+      - id: ruff-format
+
+  # --- uv: mantiene uv.lock sincronizado (Astral) ---
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    rev: 0.12.2
+    hooks:
+      - id: uv-lock
