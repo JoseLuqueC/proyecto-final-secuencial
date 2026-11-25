@@ -189,6 +189,7 @@ git push
 | 2026-11-18 | Añadir `Yelp/detect-secrets` + `.secrets.baseline` y endurecer `.gitignore` | Prevenir filtración accidental de tokens, `.streamlit/secrets.toml`, cachés HF y videos pesados |
 | 2026-11-18 | Construir fixture `DFineConfig` mínimo en `tests/conftest.py` | Ejecutar pruebas reales de hooks `Q/K/V` y `FDR` en CI sin depender de descargas de red |
 | 2026-11-18 | Reemplazar `check-added-large-files` por hook Python local y usar `uv run --no-sync` en `Makefile` | Evitar bloqueo `WinError 4551` en binarios cacheados y locks de OneDrive sobre `.venv` |
+| 2026-11-24 | Añadir `start_sec` en `video.py` y leer `st.session_state` tras `_render_video_tab` en `app.py` | Permitir saltar a timestamps en videos largos y poblar pestañas 2–4 en el primer clic |
 
 ## 10. Notas y tareas pendientes
 
@@ -196,7 +197,7 @@ git push
 - [x] Implementar carga de pesos preentrenados, pipeline de video e inspección de `Q`/`K`/`V`/FDR.
 - [x] Construir interfaz interactiva en `Streamlit` (`make app`) y pruebas automatizadas (`pytest`).
 - [x] Endurecer `.gitignore` y `pre-commit` con `detect-secrets`.
-- [ ] Subir repositorio público en GitHub (`JoseLuqueC/proyecto-final-secuencial`).
+- [x] Subir repositorio público en GitHub (`JoseLuqueC/proyecto-final-secuencial`).
 - [ ] Capturar capturas propias en Streamlit sobre un video real de prueba para la sustentación.
 - [ ] Ensayar sustentación (15 min exposición + 5 min preguntas, 27–28 de noviembre).
 

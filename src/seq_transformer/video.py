@@ -109,12 +109,15 @@ def extract_video_frames(
     *,
     stride: int = 2,
     max_frames: int = 24,
+    start_sec: float = 0.0,
 ) -> tuple[list[tuple[int, float, Image.Image]], float]:
     """Extrae frames RGB muestreados de un video preservando índice y timestamp."""
     if stride < 1:
         raise ValueError("stride debe ser >= 1")
     if max_frames < 1:
         raise ValueError("max_frames debe ser >= 1")
+    if start_sec < 0.0:
+        raise ValueError("start_sec debe ser >= 0.0")
 
     cap = cv2.VideoCapture(str(video_path))
     if not cap.isOpened():
@@ -123,17 +126,21 @@ def extract_video_frames(
     raw_fps = float(cap.get(cv2.CAP_PROP_FPS) or 0.0)
     source_fps = raw_fps if raw_fps > 0.0 else 24.0
     sampled: list[tuple[int, float, Image.Image]] = []
-    frame_idx = 0
+    frame_idx = max(0, int(start_sec * source_fps))
 
     try:
+        if frame_idx > 0:
+            cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
+        step = 0
         while len(sampled) < max_frames:
             ok, bgr = cap.read()
             if not ok:
                 break
-            if frame_idx % stride == 0:
+            if step % stride == 0:
                 rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
                 sampled.append((frame_idx, frame_idx / source_fps, Image.fromarray(rgb)))
             frame_idx += 1
+            step += 1
     finally:
         cap.release()
 
@@ -147,6 +154,7 @@ def analyze_video_sequence(
     threshold: float = 0.4,
     stride: int = 3,
     max_frames: int = 20,
+    start_sec: float = 0.0,
     capture_internals: bool = True,
 ) -> VideoAnalysisResult:
     """Ejecuta inferencia D-FINE frame a frame y agrega métricas secuenciales."""
@@ -154,6 +162,7 @@ def analyze_video_sequence(
         video_path,
         stride=stride,
         max_frames=max_frames,
+        start_sec=start_sec,
     )
 
     result = VideoAnalysisResult(source_fps=source_fps)

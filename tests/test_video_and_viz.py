@@ -41,6 +41,7 @@ def test_pipeline_video_sintetico_extrae_e_infiere_frames(
 
     # Act
     frames, source_fps = extract_video_frames(video_path, stride=2, max_frames=5)
+    frames_shifted, _ = extract_video_frames(video_path, stride=1, max_frames=2, start_sec=0.25)
     analysis = analyze_video_sequence(
         video_path,
         inspector,
@@ -53,6 +54,7 @@ def test_pipeline_video_sintetico_extrae_e_infiere_frames(
     # Assert
     assert source_fps > 0.0
     assert len(frames) == 3
+    assert frames_shifted[0][0] >= 1
     assert len(analysis.frames_rgb) == 3
     assert len(analysis.metrics) == 3
     assert analysis.avg_latency_ms > 0.0
