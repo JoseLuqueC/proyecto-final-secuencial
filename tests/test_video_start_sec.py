@@ -57,20 +57,27 @@ def test_inicio_posterior_a_duracion_no_devuelve_frames(short_video: Path) -> No
 
 
 @pytest.mark.parametrize(
-    ("argumentos", "mensaje"),
+    ("stride", "max_frames", "start_sec", "mensaje"),
     [
-        ({"stride": 0}, "stride"),
-        ({"max_frames": 0}, "max_frames"),
-        ({"start_sec": -0.1}, "start_sec"),
+        (0, 4, 0.0, "stride"),
+        (1, 0, 0.0, "max_frames"),
+        (1, 4, -0.1, "start_sec"),
     ],
 )
 def test_rechaza_parametros_invalidos(
     short_video: Path,
-    argumentos: dict[str, int | float],
+    stride: int,
+    max_frames: int,
+    start_sec: float,
     mensaje: str,
 ) -> None:
     with pytest.raises(ValueError, match=mensaje):
-        extract_video_frames(short_video, **argumentos)
+        extract_video_frames(
+            short_video,
+            stride=stride,
+            max_frames=max_frames,
+            start_sec=start_sec,
+        )
 
 
 def test_video_inexistente_informa_error(tmp_path: Path) -> None:
