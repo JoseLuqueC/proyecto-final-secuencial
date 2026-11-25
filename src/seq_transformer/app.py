@@ -34,7 +34,10 @@ from seq_transformer.visualization import (
 
 @st.cache_resource(show_spinner="Cargando pesos preentrenados de D-FINE...")
 def _cached_model(model_id: str) -> tuple[Any, Any, str]:
-    processor, model, _device = load_dfine_model(model_id, attn_implementation="eager")
+    processor, model, _device = load_dfine_model(
+        model_id,
+        attn_implementation="eager",
+    )
     summary = summarize_architecture(model, model_id=model_id)
     return processor, model, summary.device
 
@@ -60,9 +63,27 @@ def _render_sidebar() -> tuple[str, float, int, int, bool]:
         index=0,
     )
     model_id = DFINE_MODELS[model_label]
-    threshold = st.sidebar.slider("Umbral de confianza", 0.10, 0.90, 0.40, 0.05)
-    stride = st.sidebar.slider("Salto entre frames (stride)", 1, 10, 3, 1)
-    max_frames = st.sidebar.slider("Máximo de frames a procesar", 4, 40, 12, 2)
+    threshold = st.sidebar.slider(
+        "Umbral de confianza",
+        0.10,
+        0.90,
+        0.40,
+        0.05,
+    )
+    stride = st.sidebar.slider(
+        "Salto entre frames (stride)",
+        1,
+        10,
+        3,
+        1,
+    )
+    max_frames = st.sidebar.slider(
+        "Máximo de frames a procesar",
+        4,
+        40,
+        12,
+        2,
+    )
     capture_internals = st.sidebar.checkbox(
         "Capturar tensores Q/K/V, atención y FDR",
         value=True,
@@ -90,25 +111,33 @@ def _render_video_tab(
     )
 
     col_a, col_b = st.columns(2)
-    run_uploaded = col_a.button("Analizar video subido", disabled=uploaded_video is None)
+    run_uploaded = col_a.button(
+        "Analizar video subido",
+        disabled=uploaded_video is None,
+    )
     run_demo = col_b.button("Generar y analizar video demo sintético")
 
     if run_uploaded and uploaded_video is not None:
-        with tempfile.NamedTemporaryFile(suffix=Path(uploaded_video.name).suffix) as tmp:
-            tmp.write(uploaded_video.read())
-            tmp.flush()
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            video_path = Path(tmp_dir) / f"uploaded{Path(uploaded_video.name).suffix.lower()}"
+            video_path.write_bytes(uploaded_video.getvalue())
+
             with st.spinner("Ejecutando inferencia frame a frame..."):
                 st.session_state["video_result"] = analyze_video_sequence(
-                    Path(tmp.name),
+                    video_path,
                     inspector,
                     threshold=threshold,
                     stride=stride,
                     max_frames=max_frames,
                     capture_internals=capture_internals,
                 )
+
     elif run_demo:
         with tempfile.TemporaryDirectory() as tmp_dir:
-            demo_path = create_synthetic_demo_video(Path(tmp_dir) / "demo_seq.mp4", num_frames=16)
+            demo_path = create_synthetic_demo_video(
+                Path(tmp_dir) / "demo_seq.mp4",
+                num_frames=16,
+            )
             with st.spinner("Ejecutando inferencia en secuencia sintética..."):
                 st.session_state["video_result"] = analyze_video_sequence(
                     demo_path,
@@ -148,7 +177,8 @@ def _render_video_tab(
     st.image(
         annotated,
         caption=f"Frame #{result.metrics[selected_idx].frame_index} · "
-        f"{len(inspection.detections)} objetos · {inspection.latency_ms:.1f} ms",
+        f"{len(inspection.detections)} objetos · "
+        f"{inspection.latency_ms:.1f} ms",
         use_container_width=True,
     )
 
@@ -172,13 +202,23 @@ def _render_image_inspector_section(
     threshold: float,
     capture_internals: bool,
 ) -> tuple[Image.Image | None, InspectionResult | None]:
-    with st.expander("O analiza una imagen individual directamente (frame único)", expanded=False):
+    with st.expander(
+        "O analiza una imagen individual directamente (frame único)",
+        expanded=False,
+    ):
         uploaded_img = st.file_uploader(
             "Sube una imagen (.jpg, .jpeg, .png, .webp)",
             type=["jpg", "jpeg", "png", "webp"],
         )
         c1, c2 = st.columns(2)
-        if c1.button("Inspeccionar imagen subida", disabled=uploaded_img is None) and uploaded_img:
+
+        if (
+            c1.button(
+                "Inspeccionar imagen subida",
+                disabled=uploaded_img is None,
+            )
+            and uploaded_img
+        ):
             img = Image.open(uploaded_img).convert("RGB")
             st.session_state["active_frame"] = img
             st.session_state["active_inspection"] = inspector.inspect_image(
@@ -186,6 +226,7 @@ def _render_image_inspector_section(
                 threshold=threshold,
                 capture_internals=capture_internals,
             )
+
         if c2.button("Inspeccionar imagen sintética"):
             img = _build_synthetic_street_image()
             st.session_state["active_frame"] = img
@@ -195,10 +236,16 @@ def _render_image_inspector_section(
                 capture_internals=capture_internals,
             )
 
-    return st.session_state.get("active_frame"), st.session_state.get("active_inspection")
+    return (
+        st.session_state.get("active_frame"),
+        st.session_state.get("active_inspection"),
+    )
 
 
-def _render_qkv_tab(inspection: InspectionResult | None, arch_summary: Any) -> None:
+def _render_qkv_tab(
+    inspection: InspectionResult | None,
+    arch_summary: Any,
+) -> None:
     st.subheader("Generación y dimensiones de tensores Q, K y V")
     st.markdown(
         f"""
@@ -248,7 +295,10 @@ def _render_qkv_tab(inspection: InspectionResult | None, arch_summary: Any) -> N
         st.dataframe(pd.DataFrame(cross_rows), use_container_width=True)
 
 
-def _render_attention_tab(frame: Image.Image | None, inspection: InspectionResult | None) -> None:
+def _render_attention_tab(
+    frame: Image.Image | None,
+    inspection: InspectionResult | None,
+) -> None:
     st.subheader("Visualización de atención (Encoder Self-Attention & Decoder Cross-Attention)")
     if frame is None or inspection is None:
         st.info("Analiza un video o imagen primero para visualizar mapas de atención.")
@@ -259,8 +309,18 @@ def _render_attention_tab(frame: Image.Image | None, inspection: InspectionResul
         grid = math.isqrt(enc_attn.shape[-1])
         st.markdown("#### 1. Self-Attention del Encoder (AIFI sobre nivel S5)")
         c1, c2, c3 = st.columns(3)
-        row = c1.slider("Fila token origen", 0, grid - 1, grid // 2)
-        col = c2.slider("Columna token origen", 0, grid - 1, grid // 2)
+        row = c1.slider(
+            "Fila token origen",
+            0,
+            grid - 1,
+            grid // 2,
+        )
+        col = c2.slider(
+            "Columna token origen",
+            0,
+            grid - 1,
+            grid // 2,
+        )
         head_opt = c3.selectbox(
             "Cabeza Encoder",
             options=["Promedio"] + [f"Head {i}" for i in range(enc_attn.shape[0])],
@@ -290,13 +350,22 @@ def _render_attention_tab(frame: Image.Image | None, inspection: InspectionResul
         det_options = {
             f"Q{d.query_index} · {d.label_name} ({d.score:.2f})": d for d in inspection.detections
         }
+
         if det_options:
-            chosen = st.selectbox("Object Query detectada", options=list(det_options.keys()))
+            chosen = st.selectbox(
+                "Object Query detectada",
+                options=list(det_options.keys()),
+            )
             det = det_options[chosen]
             q_idx = det.query_index
             box = det.box_xyxy
         else:
-            q_idx = st.number_input("Índice de Object Query", 0, 299, 0)
+            q_idx = st.number_input(
+                "Índice de Object Query",
+                0,
+                299,
+                0,
+            )
             box = None
 
         head_cross_opt = st.selectbox(
@@ -317,7 +386,10 @@ def _render_attention_tab(frame: Image.Image | None, inspection: InspectionResul
         plt.close("all")
 
 
-def _render_fdr_tab(frame: Image.Image | None, inspection: InspectionResult | None) -> None:
+def _render_fdr_tab(
+    frame: Image.Image | None,
+    inspection: InspectionResult | None,
+) -> None:
     st.subheader("Innovación: Fine-grained Distribution Refinement (FDR)")
     if frame is None or inspection is None or inspection.fdr_edge_probs is None:
         st.info("Ejecuta una inferencia con captura activa para graficar distribuciones FDR.")
@@ -327,18 +399,38 @@ def _render_fdr_tab(frame: Image.Image | None, inspection: InspectionResult | No
         det_options = {
             f"Q{d.query_index} · {d.label_name} ({d.score:.2f})": d for d in inspection.detections
         }
-        chosen = st.selectbox("Objeto detectado", options=list(det_options.keys()), key="fdr_det")
+        chosen = st.selectbox(
+            "Objeto detectado",
+            options=list(det_options.keys()),
+            key="fdr_det",
+        )
         det = det_options[chosen]
         q_idx = det.query_index
         st.image(
-            draw_detections(frame, inspection.detections, highlight_query_idx=q_idx),
-            caption=f"Objeto seleccionado: Query {q_idx} ({det.label_name})",
+            draw_detections(
+                frame,
+                inspection.detections,
+                highlight_query_idx=q_idx,
+            ),
+            caption=(f"Objeto seleccionado: Query {q_idx} ({det.label_name})"),
             width=460,
         )
     else:
-        q_idx = int(st.number_input("Query ID (sin detecciones sobre umbral)", 0, 299, 0))
+        q_idx = int(
+            st.number_input(
+                "Query ID (sin detecciones sobre umbral)",
+                0,
+                299,
+                0,
+            )
+        )
 
-    st.pyplot(plot_fdr_distributions(inspection.fdr_edge_probs, query_idx=q_idx))
+    st.pyplot(
+        plot_fdr_distributions(
+            inspection.fdr_edge_probs,
+            query_idx=q_idx,
+        )
+    )
     plt.close("all")
 
 
@@ -398,14 +490,24 @@ def main() -> None:
 
     model_id, threshold, stride, max_frames, capture_internals = _render_sidebar()
     processor, model, device_str = _cached_model(model_id)
-    arch_summary = summarize_architecture(model, model_id=model_id)
-    inspector = DFineInspector(model=model, processor=processor)
+    arch_summary = summarize_architecture(
+        model,
+        model_id=model_id,
+    )
+    inspector = DFineInspector(
+        model=model,
+        processor=processor,
+    )
 
     st.sidebar.success(
         f"Modelo listo en `{device_str}` · {arch_summary.total_params / 1e6:.2f}M parámetros"
     )
 
-    frame, inspection = _render_image_inspector_section(inspector, threshold, capture_internals)
+    frame, inspection = _render_image_inspector_section(
+        inspector,
+        threshold,
+        capture_internals,
+    )
 
     tab_video, tab_qkv, tab_attn, tab_fdr, tab_theory = st.tabs(
         [
@@ -418,13 +520,32 @@ def main() -> None:
     )
 
     with tab_video:
-        _render_video_tab(inspector, threshold, stride, max_frames, capture_internals)
+        _render_video_tab(
+            inspector,
+            threshold,
+            stride,
+            max_frames,
+            capture_internals,
+        )
+
     with tab_qkv:
-        _render_qkv_tab(inspection, arch_summary)
+        _render_qkv_tab(
+            inspection,
+            arch_summary,
+        )
+
     with tab_attn:
-        _render_attention_tab(frame, inspection)
+        _render_attention_tab(
+            frame,
+            inspection,
+        )
+
     with tab_fdr:
-        _render_fdr_tab(frame, inspection)
+        _render_fdr_tab(
+            frame,
+            inspection,
+        )
+
     with tab_theory:
         _render_theory_tab(arch_summary)
 
