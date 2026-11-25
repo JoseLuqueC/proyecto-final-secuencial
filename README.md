@@ -191,6 +191,86 @@ una secuencia sintética de `640×360`:
 > pestaña **1. Video e Inferencia**, explora las pestañas **2–4** y adjunta aquí tus capturas de
 > pantalla propias en `docs/assets/` antes de la sustentación.
 
+### Validación complementaria con video real (25 de noviembre de 2026)
+
+Además de la prueba sintética documentada arriba, se analizó un video real de
+tráfico urbano usando **D-FINE-Nano sobre CPU** y captura de tensores internos.
+Esta ejecución es independiente de la prueba sintética; sus cifras no deben
+compararse directamente sin controlar las condiciones experimentales.
+
+| Configuración | Valor |
+|---|---|
+| Modelo | `ustc-community/dfine_n_coco` |
+| Escena | Tráfico urbano (automóviles, motocicletas y personas) |
+| Segundo inicial (`start_sec`) | `10.0` |
+| Salto entre frames (`stride`) | `3` |
+| Máximo de frames | `12` |
+| Umbral de confianza | `0.40` |
+| Captura de Q/K/V, atención y FDR | Activada |
+
+| Métrica observada | Resultado |
+|---|---:|
+| Frames procesados | `12` |
+| Latencia media por frame | `454.7 ms` |
+| Media de FPS instantáneos mostrada por la aplicación | `2.39 FPS` |
+| Detecciones promedio por frame | `22.83` |
+
+La selección `start_sec=10` permitió iniciar el análisis alrededor del frame
+`600` del video utilizado. El valor de FPS es un promedio de tasas instantáneas
+calculadas a partir de las latencias; **no es una medición de FPS de reproducción
+continua del video**. Las puntuaciones de confianza tampoco equivalen a una
+medición de precisión o mAP, que requeriría anotaciones de referencia.
+
+**Evidencias visuales de la ejecución:**
+
+**1. Métricas temporales de inferencia**
+
+![Métricas de inferencia en video real](docs/assets/01-metricas-video-real.png)
+
+**2. Detecciones de objetos sobre un fotograma**
+
+![Detecciones en tráfico urbano](docs/assets/02-detecciones.png)
+
+**3. Dimensiones y normas de tensores Q/K/V**
+
+![Tensores Q K V del encoder y decoder](docs/assets/03-tensores-qkv.png)
+
+**4. Mapa de Self-Attention AIFI del encoder**
+
+![Mapa Self-Attention](docs/assets/04-self-attention.png)
+
+**5. Muestreo de Cross-Attention Deformable del decoder**
+
+![Cross-Attention Deformable](docs/assets/05-cross-attention.png)
+
+**6. Distribuciones discretas FDR de la Object Query 0**
+
+![Distribuciones FDR](docs/assets/06-fdr.png)
+
+En la captura FDR, los valores esperados de los bins para la query seleccionada
+fueron: izquierdo `15.82`, superior `16.30`, derecho `15.96` e inferior `15.95`.
+Son posiciones en la representación interna de bins, no coordenadas en píxeles.
+
+### Validación adicional de calidad y pruebas
+
+En Windows, con Python `3.13.15`, se ejecutaron las verificaciones siguientes:
+
+```powershell
+uv run ruff check .
+uv run ruff format --check .
+uv run python -m compileall -q src tests
+uv run pytest -v
+```
+
+El resultado registrado fue **12 pruebas aprobadas** (cinco existentes y siete
+agregadas en `tests/test_video_start_sec.py`), con Ruff sin errores y
+`19` archivos correctamente formateados. Las pruebas nuevas cubren muestreo desde
+el inicio y desde un segundo específico, inicio posterior a la duración, valores
+inválidos de `stride`, `max_frames` y `start_sec`, y video inexistente.
+
+Estas pruebas no reemplazan una evaluación de detección con etiquetas reales ni
+una prueba automatizada de extremo a extremo de la interfaz Streamlit.
+
 ---
 
 ## 7. Conclusiones
