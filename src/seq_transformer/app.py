@@ -109,6 +109,14 @@ def _render_video_tab(
         "Sube un video (.mp4, .avi, .mov, .mkv)",
         type=["mp4", "avi", "mov", "mkv"],
     )
+    start_sec = float(
+        st.number_input(
+            "Segundo de inicio en el video (útil para grabaciones largas)",
+            min_value=0.0,
+            value=0.0,
+            step=10.0,
+        )
+    )
 
     col_a, col_b = st.columns(2)
     run_uploaded = col_a.button(
@@ -129,6 +137,7 @@ def _render_video_tab(
                     threshold=threshold,
                     stride=stride,
                     max_frames=max_frames,
+                    start_sec=start_sec,
                     capture_internals=capture_internals,
                 )
 
@@ -503,7 +512,7 @@ def main() -> None:
         f"Modelo listo en `{device_str}` · {arch_summary.total_params / 1e6:.2f}M parámetros"
     )
 
-    frame, inspection = _render_image_inspector_section(
+    _render_image_inspector_section(
         inspector,
         threshold,
         capture_internals,
@@ -527,6 +536,9 @@ def main() -> None:
             max_frames,
             capture_internals,
         )
+
+    frame = st.session_state.get("active_frame")
+    inspection = st.session_state.get("active_inspection")
 
     with tab_qkv:
         _render_qkv_tab(
