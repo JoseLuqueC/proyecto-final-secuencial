@@ -10,10 +10,14 @@ SHELL := /bin/bash
 help: ## Muestra esta ayuda
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}'
 
-install: ## Sincroniza el entorno virtual e instala dependencias
-	uv sync
+install: ## Sincroniza el entorno virtual e instala dependencias (CPU)
+	uv sync --extra cpu --link-mode=copy
 
-dev: install pre-commit-install ## Prepara el entorno de desarrollo (sync + hooks)
+dev: install pre-commit-install ## Prepara el entorno de desarrollo (CPU + hooks)
+
+dev-cuda: ## Sincroniza el entorno con soporte PyTorch CUDA (NVIDIA GPU)
+	uv sync --all-groups --extra cuda --link-mode=copy
+	uv run --no-sync python -m pre_commit install
 
 pre-commit-install: ## Instala los hooks de pre-commit en el repositorio local
 	uv run --no-sync python -m pre_commit install

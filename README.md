@@ -148,7 +148,9 @@ git clone https://github.com/JoseLuqueC/proyecto-final-secuencial.git
 cd proyecto-final-secuencial
 
 # 1. Instalar dependencias y hooks de pre-commit
-uv sync --all-groups
+#    Usa `--extra cpu` (sin GPU) o `--extra cuda` (NVIDIA GPU local; equivalente a `make dev-cuda`)
+uv sync --all-groups --extra cpu
+# O con GPU NVIDIA: make dev-cuda
 uv run python -m pre_commit install
 
 # 2. Verificar calidad, tipos y pruebas offline

@@ -190,6 +190,7 @@ git push
 | 2026-11-18 | Construir fixture `DFineConfig` mínimo en `tests/conftest.py` | Ejecutar pruebas reales de hooks `Q/K/V` y `FDR` en CI sin depender de descargas de red |
 | 2026-11-18 | Reemplazar `check-added-large-files` por hook Python local y usar `uv run --no-sync` en `Makefile` | Evitar bloqueo `WinError 4551` en binarios cacheados y locks de OneDrive sobre `.venv` |
 | 2026-11-24 | Añadir `start_sec` en `video.py` y leer `st.session_state` tras `_render_video_tab` en `app.py` | Permitir saltar a timestamps en videos largos y poblar pestañas 2–4 en el primer clic |
+| 2026-11-25 | Separar extras mutuamente excluyentes `cpu` y `cuda` (`pytorch-cu128`) en `pyproject.toml` + `make dev-cuda` | Habilitar GPU NVIDIA local sin penalizar CI ni equipos CPU/macOS |
 
 ## 10. Notas y tareas pendientes
 

@@ -27,7 +27,7 @@ jobs:
           cache-dependency-glob: uv.lock
 
       - name: Sincronizar entorno
-        run: uv sync --all-groups
+        run: uv sync --all-groups --extra cpu
 
       - name: Pre-commit (higiene + Ruff + uv-lock)
         run: uv run pre-commit run --all-files --show-diff-on-failure
